@@ -4,7 +4,6 @@ import { camelize } from '@ember/string';
 import ArrayProxy from '@ember/array/proxy';
 import ObjectProxy from '@ember/object/proxy';
 import { getOwner } from '@ember/application';
-import { readOnly } from '@ember/object/computed';
 import { typeOf as emberTypeOf } from '@ember/utils';
 import EmberObject, { computed } from '@ember/object';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
@@ -30,12 +29,6 @@ export default EmberObject.extend({
     assert('Custom actions require model property to be passed!', this.get('model'));
     assert('Custom action model has to be persisted!', !(this.get('instance') && !this.get('model.id')));
   },
-
-  /**
-    @private
-    @return {DS.Store}
-  */
-  store: readOnly('model.store'),
 
   /**
     @public
@@ -64,16 +57,16 @@ export default EmberObject.extend({
     @private
     @return {DS.Adapter}
   */
-  adapter: computed('modelName', 'store', function() {
-    return this.get('store').adapterFor(this.get('modelName'));
+  adapter: computed('modelName', 'model.store', function() {
+    return this.get('model').get('store').adapterFor(this.get('modelName'));
   }).readOnly(),
 
   /**
     @private
     @return {DS.Serializer}
   */
-  serializer: computed('modelName', 'store', function() {
-    return this.get('store').serializerFor(this.get('modelName'));
+  serializer: computed('modelName', 'model.store', function() {
+    return this.get('model').get('store').serializerFor(this.get('modelName'));
   }).readOnly(),
 
   /**
@@ -186,13 +179,13 @@ export default EmberObject.extend({
 
   _onSuccess(response) {
     if (this.get('config.pushToStore') && this._validResponse(response)) {
-      let store = this.get('store');
+      let store = this.get('model').get('store');
       let modelClass = this.get('model.constructor');
       let modelId = this.get('model.id');
       let actionId = this.get('id');
 
       let documentHash = this.get('serializer').normalizeArrayResponse(store, modelClass, response, modelId, actionId);
-      return this.get('store').push(documentHash);
+      return this.get('model').get('store').push(documentHash);
     }
 
     return response;
@@ -203,7 +196,7 @@ export default EmberObject.extend({
       let id = this.get('model.id');
       let typeClass = this.get('model').constructor;
 
-      error.serializedErrors = this.get('serializer').extractErrors(this.get('store'), typeClass, error, id);
+      error.serializedErrors = this.get('serializer').extractErrors(this.get('model').get('store'), typeClass, error, id);
     }
 
     return reject(error);
