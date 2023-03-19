@@ -224,7 +224,7 @@ export default EmberObject.extend({
     let queryParams = this.queryParams();
     let modelName = this.get('modelName');
     let adapterOptions = this.get('config.adapterOptions');
-    let snapshot = this.get('model')._internalModel.createSnapshot({ adapterOptions });
+    let snapshot = this.get('model')._createSnapshot({ adapterOptions });
 
     return this.get('adapter').urlForCustomAction(modelName, id, snapshot, actionId, queryParams);
   },
