@@ -78,6 +78,10 @@ export default EmberObject.extend({
     let appConfig = model ? (getOwner(model).resolveRegistration('config:environment').emberCustomActions || {}) : {};
     let mergedConfig = deepMerge({}, appConfig, this.get('options'));
 
+    // engines somehow throw an error if we don't define `headers` and `queryParams`
+    mergedConfig.headers = mergedConfig.headers || {};
+    mergedConfig.queryParams = mergedConfig.queryParams || {};
+
     return EmberObject.create(mergedConfig);
   }).readOnly(),
 
